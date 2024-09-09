@@ -1,9 +1,9 @@
 import pygame
 import sys
-from mineshaft.constant import *
-from mineshaft.player import Player
-from mineshaft.deck import Deck
-from mineshaft.game import *
+from constant import *
+from player import Player
+from deck import Deck
+from game import Game
 
 # Initialize Pygame
 pygame.init()
@@ -16,7 +16,12 @@ pygame.display.set_caption("Board game niga")
 font = pygame.font.SysFont('Arial', 24)
 small_font = pygame.font.SysFont('Arial', 18)
 
-# Player data 
+# Player data
+player_A = Player("long pakistan")
+player_B = Player("long da den")
+player_C = Player("long da trang")
+player_D = Player("long da vang")
+game = Game(player_A, player_B, player_C, player_D)
 players = [
     {"color": BLACK, "name": player_A.name, "hp": player_A.hp, "gold": player_A.gold, "wild_card": len(player_A.wc_cards)},
     {"color": BLACK, "name": player_B.name, "hp": player_B.hp, "gold": player_B.gold, "wild_card": len(player_B.wc_cards)},

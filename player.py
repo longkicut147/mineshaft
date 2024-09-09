@@ -1,4 +1,4 @@
-from mineshaft.deck import*
+from deck import*
 
 
 class Player:

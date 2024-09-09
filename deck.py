@@ -1,4 +1,4 @@
-from mineshaft.cards import*
+from cards import*
 import random
 
 

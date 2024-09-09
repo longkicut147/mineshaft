@@ -1,4 +1,7 @@
 FPS = 60
+# Scroll variables
+scroll_y = 0
+scroll_speed = 10
 
 # Screen
 screen_width = 1280
