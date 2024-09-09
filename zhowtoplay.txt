@@ -1,0 +1,31 @@
+tấn công: 	-5 máu
+cược thua: 	-4 máu
+
+
+nhân vật và chức năng:
+miner: 		đào thêm 1 vàng
+swordman: 	đánh đổi 1 máu để tấn công
+thief:  	cướp 1 vàng từ người chơi khác
+tanker: 	không thể bị tấn công hoặc cướp
+
+
+wai cạt:
+gun: 		chỉ nhân vật 1 người chơi, nếu đúng, người đó -5 máu
+heal: 		hồi máu
+swap:		đổi bài với 1 người chơi
+disguise:	hủy bỏ bài của bản thân
+discard:	hủy bỏ bài của người chơi khác
+
+
+số người chơi: 4 người
+luật chơi:
+
+0. Có 8 charcard và 5 wildcard.
+1. Bắt đầu mỗi lượt, mỗi người nhận 1 vàng, có thể sử dụng chức năng hoặc bỏ qua.
+2. Có thể nói dối chức năng. "Đối tượng bị nhắm đến" có thể cược để yêu cầu "người sử dụng chức năng" chứng minh nhân vật bằng cách lật bài. Người thua -4 máu
+3. Có thể sử dụng 3 vàng để lấy thêm 1 wild card
+4. Có thể sử dụng 7 vàng để -5 máu đối thủ
+5. Giới hạn 7 vàng, nếu đang có 6 vàng thì không thể sử dụng người đào vàng hoặc ăn cướp
+
+
+ý tưởng: bắt đầu vòng đấu, đến lượt ai thì màn hình popup 1 cửa sổ chọn chức năng, chức năng được chọn sẽ được thông báo lên khung chat. 3 người chơi còn lại phải viết tin hoặc không tin (nếu có 1 không tin thì kiểm tra). Sau đó kết quả thông báo lên khung chat
