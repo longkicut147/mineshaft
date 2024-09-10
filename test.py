@@ -3,10 +3,42 @@ import sys
 from constant import *
 from player import Player
 from deck import Deck
-from game import Game
+
 
 # Initialize Pygame
 pygame.init()
+
+class Game(Player):
+    def __init__(self, player_A, player_B, player_C, player_D):
+        self.player_alive = [player_A, player_B, player_C, player_D]
+        self.current = 0
+
+    def round(self):
+        while len(self.player_alive) > 1:
+            self.player_alive = [player for player in self.player_alive if player.alive]
+            for _ in range(len(self.player_alive)):
+                # đến lượt người chơi hiện tại
+                current_player = self.player_alive[self.current]
+                print("{}'s turn!".format(current_player.name))
+                other_player = [player for player in self.player_alive if player != current_player]
+
+                current_player.gold += 1
+                # đối tượng của hành động là bản thân hoặc các người chơi khác
+                current_player.move(current_player, other_player)
+
+                # tăng "hiện tại" lên 1 -> "tiếp theo"
+                self.current = (self.current + 1) % len(self.player_alive)
+
+    def game_setup(self):
+        ch_deck = Deck()
+        wc_deck = Deck()
+        ch_deck.build_char_deck()
+        wc_deck.build_wildcard_deck()
+        ch_deck.shuffle()
+        wc_deck.shuffle()
+        for player in game.player_alive:
+            player.get_ch_card(ch_deck)
+            player.get_wc_card(wc_deck)
 
 # Set screen dimensions
 screen = pygame.display.set_mode((screen_width, screen_height))
@@ -17,9 +49,7 @@ font = pygame.font.SysFont('Arial', 24)
 small_font = pygame.font.SysFont('Arial', 18)
 
 # Set chat log
-chat_log = [
-    "niga", "niga", "niga", "niga", "niga","a","a","a","a","a","a","a","a","a","a","a","a","a","a","a","a","a","a","a","a","a","a"
-]
+chat_log = []
 
 # Player data
 player_A = Player("long pakistan")
@@ -27,12 +57,14 @@ player_B = Player("long da den")
 player_C = Player("long da trang")
 player_D = Player("long da vang")
 game = Game(player_A, player_B, player_C, player_D)
-players = [
-    {"color": BLACK, "name": player_A.name, "hp": player_A.hp, "gold": player_A.gold, "wild_card": len(player_A.wc_cards)},
-    {"color": BLACK, "name": player_B.name, "hp": player_B.hp, "gold": player_B.gold, "wild_card": len(player_B.wc_cards)},
-    {"color": BLACK, "name": player_C.name, "hp": player_C.hp, "gold": player_C.gold, "wild_card": len(player_C.wc_cards)},
-    {"color": BLACK, "name": player_D.name, "hp": player_D.hp, "gold": player_D.gold, "wild_card": len(player_D.wc_cards)}
-]
+def players_stats():
+    global players
+    players = [
+        {"color": BLACK, "name": player_A.name, "hp": player_A.hp, "gold": player_A.gold, "wild_card": len(player_A.wc_cards)},
+        {"color": BLACK, "name": player_B.name, "hp": player_B.hp, "gold": player_B.gold, "wild_card": len(player_B.wc_cards)},
+        {"color": BLACK, "name": player_C.name, "hp": player_C.hp, "gold": player_C.gold, "wild_card": len(player_C.wc_cards)},
+        {"color": BLACK, "name": player_D.name, "hp": player_D.hp, "gold": player_D.gold, "wild_card": len(player_D.wc_cards)}
+    ]
 
 
 
@@ -100,8 +132,22 @@ def draw_board():
 def main():
     global scroll_y
     running = True
-    game.setup()
-    
+
+    game.game_setup()
+    # ch_deck = Deck()
+    # wc_deck = Deck()
+    # ch_deck.build_char_deck()
+    # wc_deck.build_wildcard_deck()
+    # ch_deck.shuffle()
+    # wc_deck.shuffle()
+    # for player in game.player_alive:
+    #     player.get_ch_card(ch_deck)
+    #     player.get_wc_card(wc_deck)
+    # update players stats
+    players_stats()
+
+    chat_log.append(f"chao mung {len(game.player_alive)} nguoi choi")
+
     while running:
         for event in pygame.event.get():
             # Event quit game
@@ -113,6 +159,8 @@ def main():
                     scroll_y = max(scroll_y - scroll_speed, -(len(chat_log) * 30 - (screen_height - screen_height / 4 - 60)))  # Limit scroll up
                 elif event.button == 4:  # Scroll up
                     scroll_y = min(scroll_y + scroll_speed, 0)  # limit scroll down
+
+
 
         draw_board()
         pygame.display.flip()

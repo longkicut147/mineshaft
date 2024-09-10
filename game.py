@@ -2,8 +2,6 @@ from player import Player
 from deck import Deck
 
 
-
-
 class Game(Player):
     def __init__(self, player_A, player_B, player_C, player_D):
         self.player_alive = [player_A, player_B, player_C, player_D]
@@ -24,20 +22,6 @@ class Game(Player):
 
                 # tăng "hiện tại" lên 1 -> "tiếp theo"
                 self.current = (self.current + 1) % len(self.player_alive)
-
-
-    def setup(self):
-        # chuẩn bị bài và chia bài
-        ch_deck = Deck()
-        wc_deck = Deck()
-        ch_deck.build_char_deck()
-        wc_deck.build_wildcard_deck()
-        ch_deck.shuffle()
-        wc_deck.shuffle()
-        for player in self.player_alive:
-            player.get_ch_card(ch_deck)
-            player.get_wc_card(wc_deck)
-
 
             
         
