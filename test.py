@@ -4,10 +4,12 @@ from constant import *
 from player import Player
 from deck import Deck
 
-
 # Initialize Pygame
 pygame.init()
 
+
+
+# Game class
 class Game(Player):
     def __init__(self, player_A, player_B, player_C, player_D):
         self.player_alive = [player_A, player_B, player_C, player_D]
@@ -19,15 +21,57 @@ class Game(Player):
             for _ in range(len(self.player_alive)):
                 # đến lượt người chơi hiện tại
                 current_player = self.player_alive[self.current]
-                print("{}'s turn!".format(current_player.name))
+                chat_log.append("f{current_player.name}'s turn!")
                 other_player = [player for player in self.player_alive if player != current_player]
-
+                # khi đến lượt thì cộng 1 vàng
                 current_player.gold += 1
-                # đối tượng của hành động là bản thân hoặc các người chơi khác
-                current_player.move(current_player, other_player)
+                
+                # bước 1: chọn hành động
+                choices = [self.skip, self.miner, self.swordman, self.thief, self.disguise,
+                            self.swap, self.discard, self.gun, self.heal, self.buy]
+                choice = str(input("chon hanh dong muon lam: "))
+                for i in choices:
+                    if choice == i.__name__():
+                        choice = i
+
+                # bước 2: chọn đối tượng (nếu cần)
+                if choice == self.swordman or choice == self.thief or choice == self.swap or choice == self.discard:
+                    opponent_choices = other_player
+                    opponent = str(input(f"chon doi tuong muon {choice.__name__()}"))
+                    for i in opponent_choices:
+                        if opponent == i.name:
+                            opponent = i
+                else:
+                    opponent = None
+
+                # bước 3: kiểm tra nói dối (cho các hành động của character card)
+                if choice == self.swordman or choice == self.thief or choice == self.miner:
+                    for player in range(len(other_player)):
+                        chat_log.append(f"co tin {current_player} khong: ")
+                        k = str(input(""))
+                        if k==1:
+                            if choice != current_player.ch_cards[0].name:
+                                # nếu nói dối, người đó trừ 4 máu và không được thực hiện hành động
+                                current_player.take_damage(4)
+                                return
+                            else:
+                                # nếu nói thật, người kiểm tra trừ 4 máu
+                                other_player[player].take_damage(4)
+                                # và được thực hiện hành động
+                                if opponent:
+                                    choice(opponent)
+                                else:
+                                    choice()
+                                    return
+                        else:
+                            pass
+                    choice()
+                else:
+                    pass
 
                 # tăng "hiện tại" lên 1 -> "tiếp theo"
                 self.current = (self.current + 1) % len(self.player_alive)
+
 
     def game_setup(self):
         ch_deck = Deck()
@@ -40,16 +84,18 @@ class Game(Player):
             player.get_ch_card(ch_deck)
             player.get_wc_card(wc_deck)
 
+
+
 # Set screen dimensions
 screen = pygame.display.set_mode((screen_width, screen_height))
 pygame.display.set_caption("Board game niga")
-
 # Set font
 font = pygame.font.SysFont('Arial', 24)
 small_font = pygame.font.SysFont('Arial', 18)
-
 # Set chat log
 chat_log = []
+
+
 
 # Player data
 player_A = Player("long pakistan")
@@ -127,23 +173,12 @@ def draw_board():
 
 
 
-
 # Main loop
 def main():
     global scroll_y
     running = True
 
     game.game_setup()
-    # ch_deck = Deck()
-    # wc_deck = Deck()
-    # ch_deck.build_char_deck()
-    # wc_deck.build_wildcard_deck()
-    # ch_deck.shuffle()
-    # wc_deck.shuffle()
-    # for player in game.player_alive:
-    #     player.get_ch_card(ch_deck)
-    #     player.get_wc_card(wc_deck)
-    # update players stats
     players_stats()
 
     chat_log.append(f"chao mung {len(game.player_alive)} nguoi choi")
@@ -160,7 +195,7 @@ def main():
                 elif event.button == 4:  # Scroll up
                     scroll_y = min(scroll_y + scroll_speed, 0)  # limit scroll down
 
-
+        # game.round()
 
         draw_board()
         pygame.display.flip()

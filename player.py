@@ -1,4 +1,5 @@
 from deck import*
+import pygame
 
 
 class Player:
@@ -124,58 +125,13 @@ class Player:
         else:
             print("you don't have heal")
 
-    def buy_wc(self, wc_deck):
+    def buy(self, wc_deck):
         if len(wc_deck)>0:
             self.get_wc_card(wc_deck)
             self.spend(3)
         else:
             print("wild card sold out")
 
-
-
-    # chọn chức năng để sử dụng
-    def move(self, current_player, other_player):
-
-        # bước 1: chọn hành động
-        choices = [self.skip, self.miner, self.swordman, self.thief, self.disguise,
-                    self.swap, self.discard, self.gun, self.heal, self.buy_wc]
-        i = int(input())
-        choice = choices[i-1]
-        # tạo tạm một list với tên của các method để đem so sánh khi kiểm tra nói dối
-        choices_str = ["skip", "miner", "swordman", "thief", "disguise",
-                    "swap", "discard", "gun", "heal", "buy_wc"]
-        choice_str = choices_str[i-1]
-
-
-        # bước 2: chọn đối tượng (nếu cần)
-        if choice == self.swordman or choice == self.thief or choice == self.swap or choice == self.discard:
-            opponent_choices = other_player
-            j = int(input())
-            opponent = opponent_choices[j-1]
-        else:
-            opponent = None
-
-
-        # bước 3: kiểm tra nói dối (cho các hành động của character card)
-        if choice == self.swordman or choice == self.thief or choice == self.miner:
-            for player in range(len(other_player)):
-                print(other_player[player].name, "kiểm tra? (0 là có tin, 1 là không tin): ")
-                k = int(input())
-                if k==1:
-                    if choice_str != current_player.ch_cards[0].name:
-                        # nếu nói dối, người đó trừ 4 máu và không được thực hiện hành động
-                        current_player.take_damage(4)
-                    else:
-                        # nếu nói thật, người kiểm tra trừ 4 máu
-                        other_player[player].take_damage(4)
-                        # và được thực hiện hành động
-                        if opponent:
-                            choice(opponent)
-                        else:
-                            choice()
-                    return
-        else:
-            pass
 
 
         
