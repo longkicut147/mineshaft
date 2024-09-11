@@ -17,3 +17,6 @@ LIGHTGRAY = (211, 211, 211)
 player_width = screen_width/5
 player_height = screen_height/6
 spacing = (screen_width - 4*player_width) // 5
+
+# Set chat log
+chat_log = []

@@ -3,106 +3,27 @@ import sys
 from constant import *
 from player import Player
 from deck import Deck
+from game import Game
 
 # Initialize Pygame
 pygame.init()
-
-
-
-# Game class
-class Game(Player):
-    def __init__(self, player_A, player_B, player_C, player_D):
-        self.player_alive = [player_A, player_B, player_C, player_D]
-        self.current = 0
-
-    def round(self):
-        while len(self.player_alive) > 1:
-            self.player_alive = [player for player in self.player_alive if player.alive]
-            for _ in range(len(self.player_alive)):
-                # đến lượt người chơi hiện tại
-                current_player = self.player_alive[self.current]
-                chat_log.append("f{current_player.name}'s turn!")
-                other_player = [player for player in self.player_alive if player != current_player]
-                # khi đến lượt thì cộng 1 vàng
-                current_player.gold += 1
-                
-                # bước 1: chọn hành động
-                choices = [self.skip, self.miner, self.swordman, self.thief, self.disguise,
-                            self.swap, self.discard, self.gun, self.heal, self.buy]
-                choice = str(input("chon hanh dong muon lam: "))
-                for i in choices:
-                    if choice == i.__name__():
-                        choice = i
-
-                # bước 2: chọn đối tượng (nếu cần)
-                if choice == self.swordman or choice == self.thief or choice == self.swap or choice == self.discard:
-                    opponent_choices = other_player
-                    opponent = str(input(f"chon doi tuong muon {choice.__name__()}"))
-                    for i in opponent_choices:
-                        if opponent == i.name:
-                            opponent = i
-                else:
-                    opponent = None
-
-                # bước 3: kiểm tra nói dối (cho các hành động của character card)
-                if choice == self.swordman or choice == self.thief or choice == self.miner:
-                    for player in range(len(other_player)):
-                        chat_log.append(f"co tin {current_player} khong: ")
-                        k = str(input(""))
-                        if k==1:
-                            if choice != current_player.ch_cards[0].name:
-                                # nếu nói dối, người đó trừ 4 máu và không được thực hiện hành động
-                                current_player.take_damage(4)
-                                return
-                            else:
-                                # nếu nói thật, người kiểm tra trừ 4 máu
-                                other_player[player].take_damage(4)
-                                # và được thực hiện hành động
-                                if opponent:
-                                    choice(opponent)
-                                else:
-                                    choice()
-                                    return
-                        else:
-                            pass
-                    choice()
-                else:
-                    pass
-
-                # tăng "hiện tại" lên 1 -> "tiếp theo"
-                self.current = (self.current + 1) % len(self.player_alive)
-
-
-    def game_setup(self):
-        ch_deck = Deck()
-        wc_deck = Deck()
-        ch_deck.build_char_deck()
-        wc_deck.build_wildcard_deck()
-        ch_deck.shuffle()
-        wc_deck.shuffle()
-        for player in game.player_alive:
-            player.get_ch_card(ch_deck)
-            player.get_wc_card(wc_deck)
-
-
+clock = pygame.time.Clock()
 
 # Set screen dimensions
 screen = pygame.display.set_mode((screen_width, screen_height))
 pygame.display.set_caption("Board game niga")
+
 # Set font
 font = pygame.font.SysFont('Arial', 24)
 small_font = pygame.font.SysFont('Arial', 18)
-# Set chat log
-chat_log = []
-
-
 
 # Player data
-player_A = Player("long pakistan")
-player_B = Player("long da den")
-player_C = Player("long da trang")
-player_D = Player("long da vang")
+player_A = Player("sau")
+player_B = Player("loi")
+player_C = Player("tu")
+player_D = Player("khuoc")
 game = Game(player_A, player_B, player_C, player_D)
+
 def players_stats():
     global players
     players = [
@@ -112,9 +33,8 @@ def players_stats():
         {"color": BLACK, "name": player_D.name, "hp": player_D.hp, "gold": player_D.gold, "wild_card": len(player_D.wc_cards)}
     ]
 
-
-
-def draw_board():
+# Function to draw the game board
+def draw_board(chat_input, cursor_visible):
     # Background color
     screen.fill(LIGHTGRAY)
 
@@ -160,7 +80,7 @@ def draw_board():
     chat_x = board_x + 10
     chat_y = board_y + deck_height + 20  # Below the deck
     chat_width = board_width - 20
-    chat_height = board_height - deck_height - 30
+    chat_height = board_height - deck_height - 80  # Adjust height to accommodate input bar
     # Chat surface
     chat_surface = pygame.Surface((chat_width, chat_height))
     chat_surface.fill(LIGHTGRAY)
@@ -171,11 +91,26 @@ def draw_board():
     # Draw chat surface
     screen.blit(chat_surface, (chat_x, chat_y))
 
+    # Chat input bar with border
+    input_bar_y = chat_y + chat_height + 10
+    pygame.draw.rect(screen, BLACK, (chat_x, input_bar_y, chat_width, 30), 2)  # Black border
+    pygame.draw.rect(screen, WHITE, (chat_x + 2, input_bar_y + 2, chat_width - 4, 26))  # White input area
 
+    # Render chat input
+    chat_input_text = small_font.render(chat_input, True, BLACK)
+    screen.blit(chat_input_text, (chat_x + 5, input_bar_y + 5))
+
+    # Blinking cursor
+    if cursor_visible:
+        cursor_x = chat_x + 5 + small_font.size(chat_input)[0]  # Cursor position at the end of the text
+        pygame.draw.line(screen, BLACK, (cursor_x, input_bar_y + 5), (cursor_x, input_bar_y + 25), 2)  # Draw cursor
 
 # Main loop
 def main():
     global scroll_y
+    chat_input = ""
+    cursor_visible = True  # Controls whether the cursor is visible
+    cursor_timer = 0       # Timer to handle blinking cursor
     running = True
 
     game.game_setup()
@@ -185,22 +120,42 @@ def main():
 
     while running:
         for event in pygame.event.get():
-            # Event quit game
+            # Event to quit game
             if event.type == pygame.QUIT:
                 running = False
-            # Event mouse scroll
+            # Event for mouse scroll
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if event.button == 5:  # Scroll down
                     scroll_y = max(scroll_y - scroll_speed, -(len(chat_log) * 30 - (screen_height - screen_height / 4 - 60)))  # Limit scroll up
                 elif event.button == 4:  # Scroll up
                     scroll_y = min(scroll_y + scroll_speed, 0)  # limit scroll down
+            # Event for key press
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_RETURN:
+                    if chat_input.strip():
+                        Player.input.append(chat_input.strip())
+                    chat_input = ""  # Clear input after sending message
+                elif event.key == pygame.K_BACKSPACE:
+                    chat_input = chat_input[:-1]  # Remove last character
+                else:
+                    chat_input += event.unicode  # Add character to input
 
-        # game.round()
+        # Blinking cursor logic
+        cursor_timer += 1
+        if cursor_timer >= 30:  # Blink every half a second (assuming 60 FPS)
+            cursor_visible = not cursor_visible
+            cursor_timer = 0
 
-        draw_board()
+        
+        game.round()
+
+        # Draw the board including the chat and input bar with a cursor
+        draw_board(chat_input, cursor_visible)
         pygame.display.flip()
 
-    # running = False -> tắt
+        # FPS
+        clock.tick(FPS)
+    # Running = False -> Close game
     pygame.quit()
     sys.exit()
 

@@ -11,6 +11,7 @@ class Player:
         self.hp = 10
         self.alive = True
         self.truth = True
+        self.input = []
 
     def show_name(self):
         print("{}".format(self.name))
