@@ -28,4 +28,4 @@ luật chơi:
 5. Giới hạn 7 vàng, nếu đang có 6 vàng thì không thể sử dụng người đào vàng hoặc ăn cướp
 
 
-ý tưởng: bắt đầu vòng đấu, đến lượt ai thì màn hình popup 1 cửa sổ chọn chức năng, chức năng được chọn sẽ được thông báo lên khung chat. 3 người chơi còn lại phải viết tin hoặc không tin (nếu có 1 không tin thì kiểm tra). Sau đó kết quả thông báo lên khung chat
+ý tưởng: bắt đầu vòng đấu, đến lượt ai thì chọn chức năng sau đó chọn đối tượng thực hiện và nhập vào khung chat của mình, chức năng được chọn sẽ được thông báo lên bảng thông báo ở ngay trên. 3 người chơi còn lại nhập vào khung chat của họ tin hoặc không tin (nếu có 1 không tin thì kiểm tra). Sau đó kết quả thông báo lên bảng thông báo.
