@@ -133,7 +133,7 @@ def main():
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_RETURN:
                     if chat_input.strip():
-                        player_A.input.append(chat_input.strip())
+                        player_A.input.append(chat_input.strip()) # thêm chat input vào input list của người chơi đang điều khiển
                     chat_input = ""  # Clear input after sending message
                 elif event.key == pygame.K_BACKSPACE:
                     chat_input = chat_input[:-1]  # Remove last character
