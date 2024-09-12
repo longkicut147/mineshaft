@@ -11,7 +11,7 @@ clock = pygame.time.Clock()
 
 # Set screen dimensions
 screen = pygame.display.set_mode((screen_width, screen_height))
-pygame.display.set_caption("Board game niga")
+pygame.display.set_caption("Board game Mineshaft")
 
 # Set font
 font = pygame.font.SysFont('Arial', 24)
@@ -133,7 +133,7 @@ def main():
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_RETURN:
                     if chat_input.strip():
-                        Player.input.append(chat_input.strip())
+                        player_A.input.append(chat_input.strip())
                     chat_input = ""  # Clear input after sending message
                 elif event.key == pygame.K_BACKSPACE:
                     chat_input = chat_input[:-1]  # Remove last character
@@ -147,7 +147,7 @@ def main():
             cursor_timer = 0
 
         
-        game.round()
+        # game.round()
 
         # Draw the board including the chat and input bar with a cursor
         draw_board(chat_input, cursor_visible)
