@@ -23,11 +23,11 @@ class Player:
     def get_wc_card(self, wc_deck):
         self.wc_cards.append(wc_deck.deal())
 
-    def show_card(self):
-        for card in self.ch_cards:
-            card.show()
-        for card in self.wc_cards:
-            card.show()
+    # def show_card(self):
+    #     for card in self.ch_cards:
+    #         card.show()
+    #     for card in self.wc_cards:
+    #         card.show()
 
     # nhận sát thương
     def take_damage(self, damage):
@@ -38,8 +38,8 @@ class Player:
                 # nếu máu về 0 thì chết
                 self.alive = False
     
-    def show_hp(self):
-        print("{}".format(self.hp))
+    # def show_hp(self):
+    #     print("{}".format(self.hp))
 
     # nhận vàng
     def earn(self, e_gold):
@@ -55,8 +55,8 @@ class Player:
         else:
             print("not enough gold")
 
-    def show_gold(self):
-        print("{}".format(self.gold))
+    # def show_gold(self):
+    #     print("{}".format(self.gold))
 
 
     # các chức năng có thể sử dụng
@@ -133,6 +133,12 @@ class Player:
         else:
             print("wild card sold out")
 
+    def attack(self, opponent):
+        if self.gold >= 7:
+            self.gold -= 7
+            opponent.take_damage(5)
+        else:
+            print("not enough gold")
 
 
         

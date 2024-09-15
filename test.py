@@ -18,10 +18,10 @@ font = pygame.font.SysFont('Arial', 24)
 small_font = pygame.font.SysFont('Arial', 18)
 
 # Player data
-player_A = Player("sau")
-player_B = Player("loi")
-player_C = Player("tu")
-player_D = Player("khuoc")
+player_A = Player("A")
+player_B = Player("B")
+player_C = Player("C")
+player_D = Player("D")
 game = Game(player_A, player_B, player_C, player_D)
 
 def players_stats():
@@ -105,6 +105,8 @@ def draw_board(chat_input, cursor_visible):
         cursor_x = chat_x + 5 + small_font.size(chat_input)[0]  # Cursor position at the end of the text
         pygame.draw.line(screen, BLACK, (cursor_x, input_bar_y + 5), (cursor_x, input_bar_y + 25), 2)  # Draw cursor
 
+
+
 # Main loop
 def main():
     global scroll_y
@@ -118,7 +120,10 @@ def main():
 
     chat_log.append(f"chao mung {len(game.player_alive)} nguoi choi")
 
+    game.round()
+
     while running:
+
         for event in pygame.event.get():
             # Event to quit game
             if event.type == pygame.QUIT:
@@ -146,8 +151,6 @@ def main():
             cursor_visible = not cursor_visible
             cursor_timer = 0
 
-        
-        # game.round()
 
         # Draw the board including the chat and input bar with a cursor
         draw_board(chat_input, cursor_visible)
@@ -155,6 +158,8 @@ def main():
 
         # FPS
         clock.tick(FPS)
+
+        
     # Running = False -> Close game
     pygame.quit()
     sys.exit()
