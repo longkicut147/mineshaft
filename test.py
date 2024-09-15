@@ -3,7 +3,7 @@ import sys
 from constant import *
 from player import Player
 from deck import Deck
-from game import Game
+from game import Game, Timer
 
 # Initialize Pygame
 pygame.init()
@@ -115,13 +115,16 @@ def main():
     cursor_timer = 0       # Timer to handle blinking cursor
     running = True
 
+
+    # set up
     game.game_setup()
     players_stats()
-
+    turn_started = False
+    turn_time = Timer(2000)
     chat_log.append(f"chao mung {len(game.player_alive)} nguoi choi")
 
-    game.round()
 
+    # main loop
     while running:
 
         for event in pygame.event.get():
@@ -150,6 +153,24 @@ def main():
         if cursor_timer >= 30:  # Blink every half a second (assuming 60 FPS)
             cursor_visible = not cursor_visible
             cursor_timer = 0
+
+        
+        if len(game.player_alive) ==1:
+            chat_log.append("game, set.")
+        else:
+            # Kiểm tra nếu lượt chưa bắt đầu, thì bắt đầu lượt mới
+            if not turn_started:
+                chat_log.append(f"{game.player_alive[game.current_player].name}'s turn start.")
+                turn_started = True  # Đánh dấu lượt đã bắt đầu
+                turn_time.activate()  # Bắt đầu đếm thời gian cho lượt chơi
+
+            # Cập nhật timer để kết thúc lượt khi đủ thời gian
+            turn_time.update()
+            if not turn_time.active:  # Khi hết thời gian
+                chat_log.append(f"{game.player_alive[game.current_player].name}'s turn end.")
+                game.current_player = (game.current_player + 1) % game.num_player  # Chuyển sang người chơi tiếp theo
+                turn_started = False  # Đặt lại trạng thái để bắt đầu lượt mới
+                turn_time.activate()  # Kích hoạt lại bộ đếm thời gian cho lượt mới
 
 
         # Draw the board including the chat and input bar with a cursor
