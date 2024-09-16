@@ -126,13 +126,6 @@ class Player:
         else:
             print("you don't have heal")
 
-    def buy(self, wc_deck):
-        if len(wc_deck)>0:
-            self.get_wc_card(wc_deck)
-            self.spend(3)
-        else:
-            print("wild card sold out")
-
     def attack(self, opponent):
         if self.gold >= 7:
             self.gold -= 7

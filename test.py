@@ -35,6 +35,79 @@ def players_stats():
 
 # Function to draw the game board
 def draw_board(chat_input, cursor_visible):
+    
+    # Background color
+    screen.fill(LIGHTGRAY)
+
+    # Top Navigation Bar
+    pygame.draw.rect(screen, GRAY, (0, 0, screen_width, screen_height/4))
+
+    # Player areas
+    for i, player in enumerate(players):
+        x = (i + 1) * spacing + i * player_width
+        y = screen_height / 30
+        pygame.draw.rect(screen, player["color"], (x, y, player_width, player_height))
+        text_spacing = player_height // 5
+        name_text = small_font.render(f"{player['name']}", True, WHITE)
+        hp_text = small_font.render(f"HP: {player['hp']}", True, WHITE)
+        gold_text = small_font.render(f"Gold: {player['gold']}", True, WHITE)
+        wild_card_text = small_font.render(f"Wild Card: {player['wild_card']}", True, WHITE)
+        screen.blit(name_text, (x + 10, y + 10))
+        screen.blit(hp_text, (x + 10, y + 2 * text_spacing))
+        screen.blit(gold_text, (x + 10, y + 3 * text_spacing))
+        screen.blit(wild_card_text, (x + 10, y + 4 * text_spacing))
+
+    # Main board
+    board_x = 50
+    board_y = screen_height / 4 + 10
+    board_width = screen_width - 100
+    board_height = screen_height - (screen_height / 4 + 50)
+    pygame.draw.rect(screen, BLACK, (board_x, board_y, board_width, board_height), 2)
+
+    # Draw deck dividing line and card details
+    deck_height = screen_height/12
+    pygame.draw.line(screen, BLACK, (board_x, board_y + deck_height), (board_x + board_width - 1, board_y + deck_height), 2)
+    cards_in_ch_deck = small_font.render(f"{10} cards in character deck", True, BLACK)
+    cards_in_wc_deck = small_font.render(f"{10} wild cards left", True, BLACK)
+    screen.blit(cards_in_ch_deck, (board_x + 10, board_y + 10))
+    screen.blit(cards_in_wc_deck, (board_x + 10, board_y + 10 + screen_height / 30))
+
+    # Chat area
+    chat_x = board_x + 10
+    chat_y = board_y + deck_height + 20
+    chat_width = board_width - 20
+    chat_height = board_height - deck_height - 80
+    chat_surface = pygame.Surface((chat_width, chat_height))
+    chat_surface.fill(LIGHTGRAY)
+
+    # Calculate maximum scroll position
+    max_scroll_y = -(len(chat_log) * 30 - chat_height)
+
+    # Auto-scroll only if at the bottom or new message is added
+    if auto_scroll:
+        scroll_y = max_scroll_y
+
+    # Chat messages
+    for i, line in enumerate(chat_log):
+        chat_text = small_font.render(line, True, BLACK)
+        chat_surface.blit(chat_text, (10, i * 30 + scroll_y))
+
+    # Draw chat surface
+    screen.blit(chat_surface, (chat_x, chat_y))
+
+    # Chat input bar with border
+    input_bar_y = chat_y + chat_height + 10
+    pygame.draw.rect(screen, BLACK, (chat_x, input_bar_y, chat_width, 30), 2)
+    pygame.draw.rect(screen, WHITE, (chat_x + 2, input_bar_y + 2, chat_width - 4, 26))
+
+    # Render chat input
+    chat_input_text = small_font.render(chat_input, True, BLACK)
+    screen.blit(chat_input_text, (chat_x + 5, input_bar_y + 5))
+
+    # Blinking cursor
+    if cursor_visible:
+        cursor_x = chat_x + 5 + small_font.size(chat_input)[0]
+        pygame.draw.line(screen, BLACK, (cursor_x, input_bar_y + 5), (cursor_x, input_bar_y + 25), 2)
     # Background color
     screen.fill(LIGHTGRAY)
 
@@ -109,44 +182,55 @@ def draw_board(chat_input, cursor_visible):
 
 # Main loop
 def main():
-    global scroll_y
+    running = True
     chat_input = ""
+    
+    # chat_log scroll movement
+    global scroll_y
+    global auto_scroll
+    scroll_y = 0
     cursor_visible = True  # Controls whether the cursor is visible
     cursor_timer = 0       # Timer to handle blinking cursor
-    running = True
+    auto_scroll = True     # Auto scroll when new messages added
 
 
     # set up
     game.game_setup()
     players_stats()
     turn_started = False
-    turn_time = Timer(2000)
+    turn_gold = False
+    turn_time = Timer(10000)
     chat_log.append(f"chao mung {len(game.player_alive)} nguoi choi")
 
 
     # main loop
     while running:
+        current_player = game.player_alive[game.current]
+        choices = [Player.skip, Player.miner, Player.heal, Player.disguise,
+                Player.thief, Player.swap, Player.discard, Player.gun, Player.swordman, Player.attack]
+        other_players = [player for player in game.player_alive if player != current_player]
 
+        # event handle
         for event in pygame.event.get():
-            # Event to quit game
             if event.type == pygame.QUIT:
                 running = False
-            # Event for mouse scroll
-            if event.type == pygame.MOUSEBUTTONDOWN:
-                if event.button == 5:  # Scroll down
-                    scroll_y = max(scroll_y - scroll_speed, -(len(chat_log) * 30 - (screen_height - screen_height / 4 - 60)))  # Limit scroll up
-                elif event.button == 4:  # Scroll up
-                    scroll_y = min(scroll_y + scroll_speed, 0)  # limit scroll down
-            # Event for key press
-            if event.type == pygame.KEYDOWN:
+            # elif event.type == pygame.MOUSEBUTTONDOWN:
+            #     if event.button == 5:  # Scroll down
+            #         scroll_y = max(scroll_y - scroll_speed, -(len(chat_log) * 30 - (screen_height - screen_height / 4 - 60)))
+            #         auto_scroll = False  # Disable auto-scroll when manually scrolled
+            #     elif event.button == 4:  # Scroll up
+            #         scroll_y = min(scroll_y + scroll_speed, 0)
+            #         auto_scroll = False  # Disable auto-scroll when manually scrolled
+            elif event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_RETURN:
                     if chat_input.strip():
-                        player_A.input.append(chat_input.strip()) # thêm chat input vào input list của người chơi đang điều khiển
-                    chat_input = ""  # Clear input after sending message
+                        current_player.input.append(chat_input.strip())
+                        chat_input = ""  # Clear input after sending
+                        auto_scroll = True  # Re-enable auto-scroll on new message
                 elif event.key == pygame.K_BACKSPACE:
-                    chat_input = chat_input[:-1]  # Remove last character
+                    chat_input = chat_input[:-1]
                 else:
-                    chat_input += event.unicode  # Add character to input
+                    chat_input += event.unicode
 
         # Blinking cursor logic
         cursor_timer += 1
@@ -155,28 +239,94 @@ def main():
             cursor_timer = 0
 
         
+        # game logic
         if len(game.player_alive) ==1:
             chat_log.append("game, set.")
         else:
             # Kiểm tra nếu lượt chưa bắt đầu, thì bắt đầu lượt mới
             if not turn_started:
-                chat_log.append(f"{game.player_alive[game.current_player].name}'s turn start.")
+                chat_log.append(f"{current_player.name}'s turn start, make your choice:")
                 turn_started = True  # Đánh dấu lượt đã bắt đầu
-                turn_time.activate()  # Bắt đầu đếm thời gian cho lượt chơi
+                turn_time.activate()  # Bắt đầu đếm thời gian lượt
 
             # Cập nhật timer để kết thúc lượt khi đủ thời gian
             turn_time.update()
-            if not turn_time.active:  # Khi hết thời gian
-                chat_log.append(f"{game.player_alive[game.current_player].name}'s turn end.")
-                game.current_player = (game.current_player + 1) % game.num_player  # Chuyển sang người chơi tiếp theo
-                turn_started = False  # Đặt lại trạng thái để bắt đầu lượt mới
-                turn_time.activate()  # Kích hoạt lại bộ đếm thời gian cho lượt mới
+            
+            # khi đến lượt thì cộng 1 vàng
+            if not turn_gold:
+                current_player.gold += 1
+                turn_gold = True
+
+            if not turn_time.active: # khi hết thời gian đếm
+
+                # bước 1: chọn hành động 
+                choices = [Player.skip, Player.miner, Player.heal, Player.disguise,
+                           Player.thief, Player.swap, Player.discard, Player.gun, Player.swordman, Player.attack]
+                other_players = [player for player in game.player_alive if player != current_player]
+
+                if len(current_player.input) == 2:
+                    # kiểm tra 2 giá trị người chơi nhập vào có đúng cú pháp "hành động Enter đối tượng" không
+                    if current_player.input[0] in [i.__name__ for i in choices] and current_player.input[1] in [i.name for i in other_players]:
+                        choice = current_player.input[0]
+                        for i in choices:
+                            if choice == i.__name__:
+                                choice = i
+                        # nếu các lựa chọn cần đối tượng thì chọn dối tượng
+                        if choice in [Player.swordman, Player.thief, Player.swap, Player.discard, Player.gun, Player.attack]:
+                            opponent = current_player.input[1]
+                            for i in other_players:
+                                if opponent == i.name:
+                                    opponent = i
+                            choice(current_player, opponent)
+                            chat_log.append(f"{current_player.name} use {choice.__name__} to {opponent.name}")
+                        else:
+                            # nếu muốn chọn các hành động không cần đối tượng mà nhập 2 giá trị thì không cần dùng opponent
+                            choice(current_player)
+                            chat_log.append(f"{current_player.name} use {choice.__name__}")
+                    else:
+                        chat_log.append(f"{current_player.name} syntax error, use skip instead")
+                        game.skip()
+
+                elif len(current_player.input) == 1:
+                    # kiểm tra 1 gia trị người chơi nhập vào có nằm trong mục hành động không
+                    if current_player.input[0] in [i.__name__ for i in choices]:
+                        choice = current_player.input[0]
+                        for i in choices:
+                            if choice == i.__name__:
+                                choice = i                    
+                        # nếu muốn chọn các hành động cần đối tượng mà chỉ nhập 1 giá trị thì skip vì lỗi
+                        if choice in [Player.swordman, Player.thief, Player.swap, Player.discard, Player.gun, Player.attack]:
+                            chat_log.append(f"{current_player.name} syntax error, use skip instead")
+                            game.skip()
+                        else:
+                            choice(current_player)
+                            chat_log.append(f"{current_player.name} use {choice.__name__}")
+                    else:
+                        chat_log.append(f"{current_player.name} syntax error, use skip instead")
+                        game.skip()
+
+                # nếu hết thời gian mà không nhập gì hoặc nhập quá nhiều hoặc nhập linh tinh thì mặc định là skip
+                else:
+                    game.skip()
+        
+
+                # chuyển sang người chơi tiếp theo và reset tất cả lại từ đầu
+                chat_log.append(f"{current_player.name}'s turn end.")
+                chat_log.append("")
+                current_player.input.clear()
+                game.current = (game.current + 1) % game.num_player
+                turn_started = False
+                turn_gold = False
+                turn_time.activate()
+                players_stats()
+
 
 
         # Draw the board including the chat and input bar with a cursor
+        # players_stats()
         draw_board(chat_input, cursor_visible)
         pygame.display.flip()
-
+        
         # FPS
         clock.tick(FPS)
 

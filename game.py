@@ -33,7 +33,7 @@ class Game(Player):
     def __init__(self, player_A, player_B, player_C, player_D):
         self.player_alive = [player_A, player_B, player_C, player_D]
         self.num_player = len(self.player_alive)
-        self.current_player = 0
+        self.current = 0
 
 
     def game_setup(self):
