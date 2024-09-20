@@ -268,15 +268,48 @@ def main():
                             for i in other_players:
                                 if opponent == i.name:
                                     opponent = i
-                            choice(current_player, opponent)
-                            chat_log.append(f"{current_player.name} use {choice.__name__} to {opponent.name}")
+                            if choice in [Player.swordman, Player.thief]:
+                                choice(current_player, opponent)
+                                chat_log.append(f"{current_player.name} use {choice.__name__} to {opponent.name}")
+                                phase1 = False
+                                phase2 = True
+                            else:
+                                choice(current_player, opponent)
+                                chat_log.append(f"{current_player.name} use {choice.__name__} to {opponent.name}")
+                                chat_log.append(f"{current_player.name}'s turn end.")
+                                chat_log.append("")
+                                current_player.input.clear()
+                                game.current = (game.current + 1) % game.num_player
+                                choice_phase = False
+                                trust_phase = False
+                                players_stats()
                         else:
                             # nếu muốn chọn các hành động không cần đối tượng mà nhập 2 giá trị thì không cần dùng opponent
-                            choice(current_player)
-                            chat_log.append(f"{current_player.name} use {choice.__name__}")
+                            if choice in [Player.miner]:
+                                choice(current_player)
+                                chat_log.append(f"{current_player.name} use {choice.__name__}")
+                                phase1 = False
+                                phase2 = True
+                            else:
+                                choice(current_player)
+                                chat_log.append(f"{current_player.name} use {choice.__name__}")
+                                chat_log.append(f"{current_player.name}'s turn end.")
+                                chat_log.append("")
+                                current_player.input.clear()
+                                game.current = (game.current + 1) % game.num_player
+                                choice_phase = False
+                                trust_phase = False
+                                players_stats()
                     else:
                         chat_log.append(f"{current_player.name} syntax error, use skip instead")
                         current_player.skip()
+                        chat_log.append(f"{current_player.name}'s turn end.")
+                        chat_log.append("")
+                        current_player.input.clear()
+                        game.current = (game.current + 1) % game.num_player
+                        choice_phase = False
+                        trust_phase = False
+                        players_stats()
 
                 elif len(current_player.input) == 1:
                     # kiểm tra 1 gia trị người chơi nhập vào có nằm trong mục hành động không
@@ -289,20 +322,51 @@ def main():
                         if choice in [Player.swordman, Player.thief, Player.swap, Player.discard, Player.gun, Player.attack]:
                             chat_log.append(f"{current_player.name} syntax error, use skip instead")
                             current_player.skip()
+                            chat_log.append(f"{current_player.name}'s turn end.")
+                            chat_log.append("")
+                            current_player.input.clear()
+                            game.current = (game.current + 1) % game.num_player
+                            choice_phase = False
+                            trust_phase = False
+                            players_stats()
+                        elif choice in [Player.miner]:
+                            choice(current_player)
+                            chat_log.append(f"{current_player.name} use {choice.__name__}")
+                            phase1 = False
+                            phase2 = True
                         else:
                             choice(current_player)
                             chat_log.append(f"{current_player.name} use {choice.__name__}")
+                            chat_log.append(f"{current_player.name}'s turn end.")
+                            chat_log.append("")
+                            current_player.input.clear()
+                            game.current = (game.current + 1) % game.num_player
+                            choice_phase = False
+                            trust_phase = False
+                            players_stats()
                     else:
                         chat_log.append(f"{current_player.name} syntax error, use skip instead")
                         current_player.skip()
+                        chat_log.append(f"{current_player.name}'s turn end.")
+                        chat_log.append("")
+                        current_player.input.clear()
+                        game.current = (game.current + 1) % game.num_player
+                        choice_phase = False
+                        trust_phase = False
+                        players_stats()
 
                 # nếu hết thời gian mà không nhập gì hoặc nhập quá nhiều hoặc nhập linh tinh thì mặc định là skip
                 else:
                     chat_log.append("Time's out")
                     current_player.skip()
-                current_player.input.clear()
-                phase1 = False
-                phase2 = True
+                    chat_log.append(f"{current_player.name}'s turn end.")
+                    chat_log.append("")
+                    current_player.input.clear()
+                    game.current = (game.current + 1) % game.num_player
+                    choice_phase = False
+                    trust_phase = False
+                    players_stats()
+                
 
         if phase2:
             if not trust_phase:
