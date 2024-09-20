@@ -197,10 +197,15 @@ def main():
     # set up
     game.game_setup()
     players_stats()
-    turn_started = False
-    turn_gold = False
-    turn_time = Timer(10000)
     chat_log.append(f"chao mung {len(game.player_alive)} nguoi choi")
+
+    phase1 = True
+    choice_phase = False
+    choice_time = Timer(10000)
+
+    phase2 = False
+    trust_phase = False
+    trust_time = Timer(10000)
 
 
     # main loop
@@ -214,13 +219,6 @@ def main():
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
-            # elif event.type == pygame.MOUSEBUTTONDOWN:
-            #     if event.button == 5:  # Scroll down
-            #         scroll_y = max(scroll_y - scroll_speed, -(len(chat_log) * 30 - (screen_height - screen_height / 4 - 60)))
-            #         auto_scroll = False  # Disable auto-scroll when manually scrolled
-            #     elif event.button == 4:  # Scroll up
-            #         scroll_y = min(scroll_y + scroll_speed, 0)
-            #         auto_scroll = False  # Disable auto-scroll when manually scrolled
             elif event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_RETURN:
                     if chat_input.strip():
@@ -242,26 +240,19 @@ def main():
         # game logic
         if len(game.player_alive) ==1:
             chat_log.append("game, set.")
-        else:
-            # Kiểm tra nếu lượt chưa bắt đầu, thì bắt đầu lượt mới
-            if not turn_started:
+        if phase1:
+            if not choice_phase:
                 chat_log.append(f"{current_player.name}'s turn start, make your choice:")
-                turn_started = True  # Đánh dấu lượt đã bắt đầu
-                turn_time.activate()  # Bắt đầu đếm thời gian lượt
+                choice_phase = True  # Đánh dấu lượt đã bắt đầu
+                choice_time.activate()  # Bắt đầu đếm thời gian lượt
 
             # Cập nhật timer để kết thúc lượt khi đủ thời gian
-            turn_time.update()
-            
-            # khi đến lượt thì cộng 1 vàng
-            if not turn_gold:
-                current_player.gold += 1
-                turn_gold = True
+            choice_time.update()
 
-            if not turn_time.active: # khi hết thời gian đếm
-
+            if not choice_time.active: # khi hết thời gian đếm
                 # bước 1: chọn hành động 
                 choices = [Player.skip, Player.miner, Player.heal, Player.disguise,
-                           Player.thief, Player.swap, Player.discard, Player.gun, Player.swordman, Player.attack]
+                        Player.thief, Player.swap, Player.discard, Player.gun, Player.swordman, Player.attack]
                 other_players = [player for player in game.player_alive if player != current_player]
 
                 if len(current_player.input) == 2:
@@ -285,7 +276,7 @@ def main():
                             chat_log.append(f"{current_player.name} use {choice.__name__}")
                     else:
                         chat_log.append(f"{current_player.name} syntax error, use skip instead")
-                        game.skip()
+                        current_player.skip()
 
                 elif len(current_player.input) == 1:
                     # kiểm tra 1 gia trị người chơi nhập vào có nằm trong mục hành động không
@@ -297,27 +288,43 @@ def main():
                         # nếu muốn chọn các hành động cần đối tượng mà chỉ nhập 1 giá trị thì skip vì lỗi
                         if choice in [Player.swordman, Player.thief, Player.swap, Player.discard, Player.gun, Player.attack]:
                             chat_log.append(f"{current_player.name} syntax error, use skip instead")
-                            game.skip()
+                            current_player.skip()
                         else:
                             choice(current_player)
                             chat_log.append(f"{current_player.name} use {choice.__name__}")
                     else:
                         chat_log.append(f"{current_player.name} syntax error, use skip instead")
-                        game.skip()
+                        current_player.skip()
 
                 # nếu hết thời gian mà không nhập gì hoặc nhập quá nhiều hoặc nhập linh tinh thì mặc định là skip
                 else:
-                    game.skip()
-        
+                    chat_log.append("Time's out")
+                    current_player.skip()
+                current_player.input.clear()
+                phase1 = False
+                phase2 = True
+
+        if phase2:
+            if not trust_phase:
+                chat_log.append(f"Believe {current_player.name}?")
+                trust_phase = True  # Đánh dấu lượt đã bắt đầu
+                trust_time.activate()  # Bắt đầu đếm thời gian lượt
+
+            # Cập nhật timer để kết thúc lượt khi đủ thời gian
+            trust_time.update()
+
+            if not trust_time.active: # khi hết thời gian đếm
+                chat_log.append("pass")
 
                 # chuyển sang người chơi tiếp theo và reset tất cả lại từ đầu
                 chat_log.append(f"{current_player.name}'s turn end.")
                 chat_log.append("")
                 current_player.input.clear()
                 game.current = (game.current + 1) % game.num_player
-                turn_started = False
-                turn_gold = False
-                turn_time.activate()
+                phase1 = True
+                phase2 = False
+                choice_phase = False
+                trust_phase = False
                 players_stats()
 
 

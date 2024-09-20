@@ -38,8 +38,6 @@ class Player:
                 # nếu máu về 0 thì chết
                 self.alive = False
     
-    # def show_hp(self):
-    #     print("{}".format(self.hp))
 
     # nhận vàng
     def earn(self, e_gold):
@@ -55,17 +53,17 @@ class Player:
         else:
             print("not enough gold")
 
-    # def show_gold(self):
-    #     print("{}".format(self.gold))
-
 
     # các chức năng có thể sử dụng
     def skip(self):
-        pass
+        if self.gold < 7:
+            self.earn(1)
+        else:
+            self.earn(0)
 
     def miner(self):
         if self.gold < 7:
-            self.earn(1)
+            self.earn(2)
         else:
             self.earn(0)
 
@@ -131,7 +129,7 @@ class Player:
             self.gold -= 7
             opponent.take_damage(5)
         else:
-            print("not enough gold")
+            print("not enough gold")        
 
 
         
