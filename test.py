@@ -33,6 +33,27 @@ def players_stats():
         {"color": BLACK, "name": player_D.name, "hp": player_D.hp, "gold": player_D.gold, "wild_card": len(player_D.wc_cards)}
     ]
 
+# Function to end turn if choice is not character skill
+def end_turn(current_player):
+    global choice_phase, trust_phase
+    chat_log.append(f"{current_player.name}'s turn end.")
+    chat_log.append("")
+    current_player.input.clear()
+    game.current = (game.current + 1) % game.num_player
+    choice_phase = False
+    trust_phase = False
+    players_stats()
+
+# Function to change to trust phase when choice is character skill
+def change_phase():
+    global phase1, phase2
+    if phase1 and not phase2:
+        phase1 = False
+        phase2 = True
+    else:
+        phase1 = True
+        phase2 = False
+
 # Function to draw the game board
 def draw_board(chat_input, cursor_visible):
     
@@ -199,6 +220,8 @@ def main():
     players_stats()
     chat_log.append(f"chao mung {len(game.player_alive)} nguoi choi")
 
+    global phase1, phase2, trust_phase, choice_phase
+
     phase1 = True
     choice_phase = False
     choice_time = Timer(10000)
@@ -208,6 +231,7 @@ def main():
     trust_time = Timer(10000)
 
 
+    
     # main loop
     while running:
         current_player = game.player_alive[game.current]
@@ -271,45 +295,25 @@ def main():
                             if choice in [Player.swordman, Player.thief]:
                                 choice(current_player, opponent)
                                 chat_log.append(f"{current_player.name} use {choice.__name__} to {opponent.name}")
-                                phase1 = False
-                                phase2 = True
+                                change_phase()
                             else:
                                 choice(current_player, opponent)
                                 chat_log.append(f"{current_player.name} use {choice.__name__} to {opponent.name}")
-                                chat_log.append(f"{current_player.name}'s turn end.")
-                                chat_log.append("")
-                                current_player.input.clear()
-                                game.current = (game.current + 1) % game.num_player
-                                choice_phase = False
-                                trust_phase = False
-                                players_stats()
+                                end_turn(current_player)
                         else:
                             # nếu muốn chọn các hành động không cần đối tượng mà nhập 2 giá trị thì không cần dùng opponent
                             if choice in [Player.miner]:
                                 choice(current_player)
                                 chat_log.append(f"{current_player.name} use {choice.__name__}")
-                                phase1 = False
-                                phase2 = True
+                                change_phase()
                             else:
                                 choice(current_player)
                                 chat_log.append(f"{current_player.name} use {choice.__name__}")
-                                chat_log.append(f"{current_player.name}'s turn end.")
-                                chat_log.append("")
-                                current_player.input.clear()
-                                game.current = (game.current + 1) % game.num_player
-                                choice_phase = False
-                                trust_phase = False
-                                players_stats()
+                                end_turn(current_player)
                     else:
                         chat_log.append(f"{current_player.name} syntax error, use skip instead")
                         current_player.skip()
-                        chat_log.append(f"{current_player.name}'s turn end.")
-                        chat_log.append("")
-                        current_player.input.clear()
-                        game.current = (game.current + 1) % game.num_player
-                        choice_phase = False
-                        trust_phase = False
-                        players_stats()
+                        end_turn(current_player)
 
                 elif len(current_player.input) == 1:
                     # kiểm tra 1 gia trị người chơi nhập vào có nằm trong mục hành động không
@@ -322,50 +326,25 @@ def main():
                         if choice in [Player.swordman, Player.thief, Player.swap, Player.discard, Player.gun, Player.attack]:
                             chat_log.append(f"{current_player.name} syntax error, use skip instead")
                             current_player.skip()
-                            chat_log.append(f"{current_player.name}'s turn end.")
-                            chat_log.append("")
-                            current_player.input.clear()
-                            game.current = (game.current + 1) % game.num_player
-                            choice_phase = False
-                            trust_phase = False
-                            players_stats()
+                            end_turn(current_player)
                         elif choice in [Player.miner]:
                             choice(current_player)
                             chat_log.append(f"{current_player.name} use {choice.__name__}")
-                            phase1 = False
-                            phase2 = True
+                            change_phase()
                         else:
                             choice(current_player)
                             chat_log.append(f"{current_player.name} use {choice.__name__}")
-                            chat_log.append(f"{current_player.name}'s turn end.")
-                            chat_log.append("")
-                            current_player.input.clear()
-                            game.current = (game.current + 1) % game.num_player
-                            choice_phase = False
-                            trust_phase = False
-                            players_stats()
+                            end_turn(current_player)
                     else:
                         chat_log.append(f"{current_player.name} syntax error, use skip instead")
                         current_player.skip()
-                        chat_log.append(f"{current_player.name}'s turn end.")
-                        chat_log.append("")
-                        current_player.input.clear()
-                        game.current = (game.current + 1) % game.num_player
-                        choice_phase = False
-                        trust_phase = False
-                        players_stats()
+                        end_turn(current_player)
 
                 # nếu hết thời gian mà không nhập gì hoặc nhập quá nhiều hoặc nhập linh tinh thì mặc định là skip
                 else:
                     chat_log.append("Time's out")
                     current_player.skip()
-                    chat_log.append(f"{current_player.name}'s turn end.")
-                    chat_log.append("")
-                    current_player.input.clear()
-                    game.current = (game.current + 1) % game.num_player
-                    choice_phase = False
-                    trust_phase = False
-                    players_stats()
+                    end_turn(current_player)
                 
 
         if phase2:
@@ -381,15 +360,8 @@ def main():
                 chat_log.append("pass")
 
                 # chuyển sang người chơi tiếp theo và reset tất cả lại từ đầu
-                chat_log.append(f"{current_player.name}'s turn end.")
-                chat_log.append("")
-                current_player.input.clear()
-                game.current = (game.current + 1) % game.num_player
-                phase1 = True
-                phase2 = False
-                choice_phase = False
-                trust_phase = False
-                players_stats()
+                end_turn(current_player)
+                change_phase()
 
 
 
