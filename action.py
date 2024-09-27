@@ -1,7 +1,7 @@
 from player import Player
 from error import *
 from game import Game
-ForceCoupCoins = 10
+Force_to_Attack = 10
 
 class Action:
     name = ""
