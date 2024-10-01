@@ -8,10 +8,11 @@ class Action:
     description = ""
     blocks = []
     hasTarget = False
+    consumable = False
     gold_required = 0
     hp_required = 0
             
-    def play(self, player, target = None):
+    def play(self, player:Player, target:Player = None):
         """
         should be overrriden by child classes
         returns (status, response): 
@@ -24,7 +25,7 @@ class Action:
         return False, None
 
 
-# Common choice
+# Common actions
 
 class Dig(Action):
     name = "Dig"
@@ -42,7 +43,7 @@ class Attack(Action):
     
     def play(self, player:Player, target:Player = None):
         if player.gold < self.gold_required:
-            raise not_enough_gold(self.gold_required)
+            raise NotEnoughGold(self.gold_required)
             
         # target should be alive
         if target == None:
@@ -59,7 +60,7 @@ class Attack(Action):
 
 
 
-# character's skill choice
+# character actions
 
 class Miner(Action):
     name = "Miner"
@@ -100,13 +101,13 @@ class Tanker(Action):
         
 class Swordman(Action):
     name = "Swordman"
-    description = "Attack. Sacrifice 3 hp to attack 5 hp on target player."
+    description = "Sacrifice 3 hp to attack 5 hp on target player."
     hasTarget = True
     hp_required = 3
     
     def play(self, player:Player, target:Player = None):
         if player.hp < self.hp_required:
-            raise not_enough_hp(self.hp_required)
+            raise NotEnoughHP(self.hp_required)
         if target == None:
             raise TargetRequired
             
@@ -114,50 +115,78 @@ class Swordman(Action):
         target.take_damage(5)
         
         return True, "Success"
-        
-# class Ambassador(Action):
-#     name = "Ambassador"
-#     description = "Exchange your influence with 2 cards from the Court Deck. Blocks Steal."
-#     blocks = ["Captain"]
-            
-#     def play(self, player, target = None):
-#         influenceRemaining = len(player.influence)
-#         choices = list(player.influence)
-        
-#         deckCards = [GameState.DrawCard(), GameState.DrawCard()]
-#         choices.append(deckCards[0])
-#         choices.append(deckCards[1])
-        
-#         newInfluence = player.selectAmbassadorInfluence(list(choices), influenceRemaining)
-#         if type(newInfluence) != list:
-#             newInfluence = [newInfluence]
-        
-#         def ReturnCards():
-#             GameState.AddToDeck(deckCards[0])
-#             GameState.AddToDeck(deckCards[1])
-            
-#         if len(newInfluence) != influenceRemaining:
-#             # There is a missing card. Try again.
-#             ReturnCards()
-#             raise InvalidTarget("Wrong number of cards given")
+    
 
-#         choicesCopy = list(choices) # this allow us to test for card duplicates
-#         for card in newInfluence:
-#             if not card in choicesCopy:
-#                 # something is wrong. The player sent a card choice that is not part of the original choices.
-#                 # try again.
-#                 ReturnCards()
-#                 raise InvalidTarget("Card given not part of valid choices")
-            
-#             choicesCopy.remove(card)
-        
-#         # give the player their new cards        
-#         player.influence = list(newInfluence)
 
-#         # return the unselected cards back to the Court Deck.
-#         for card in newInfluence:
-#             choices.remove(card)
+
+# wild card actions
+
+class Disguise(Action):
+    name = "Disguise"
+    description = "Change your character card."
+    consumable = True
+
+    def play(self, player:Player, target:Player=None):
+        if Disguise not in player.wild_cards:
+            raise DontHaveCard
+
+        player.wild_cards.pop()
+        deckCard = Game.deal_card()
+
+        selfCard = player.char_card[0]
+        Game.add_card_to_deck(selfCard)
+
+        player.char_card.append(deckCard)
+        Game.randomShuffle(self.Deck)
+        return True, "Success"
+    
+class Swap(Action):
+    name = "Swap"
+    description = "Change your character card with a player."
+    consumable = True 
+    hasTarget = True
+
+    def play(self, player:Player, target:Player = None):
+        if Disguise not in player.wild_cards:
+            raise DontHaveCard
+
+        if target == None:
+            raise TargetRequired
             
-#         for card in choices:
-#             GameState.AddToDeck(card)
-#         return True, "Success"
+        target.char_card[0], player.char_card[0] = player.char_card[0], target.char_card[0]
+        
+        return True, "Success"
+
+# def swap(self, opponent):
+#     if "swap" in self.wc_cards:
+#         self.ch_cards[0], opponent.ch_cards[0] = opponent.ch_cards[0], self.ch_cards[0]
+#         self.wc_cards.remove("swap")
+#     else:
+#         print("you don't have swap")
+
+# def discard(self, opponent):
+#     if "discard" in self.wc_cards:
+#         opponent.ch_cards.pop()
+#         opponent.get_ch_card(self.ch_deck)
+#         self.wc_cards.remove("discard")
+#     else:
+#         print("you don't have discard")
+
+# def gun(self, opponent):
+#     if "gun" in self.wc_cards:
+#         card = str(input("guess opponent's card: "))
+#         if card == opponent.ch_cards[0]:
+#             opponent.take_damage(5)
+#         self.wc_cards.remove("gun")
+#     else:
+#         print("you don't have gun")
+
+# def heal(self):
+#     if "heal" in self.wc_cards:
+#         if self.hp <6:
+#             self.hp = 8
+#         else:
+#             self.hp = 10
+#         self.wc_cards.remove("heal")
+#     else:
+#         print("you don't have heal")   

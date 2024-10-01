@@ -1,12 +1,3 @@
-# Coup specific exceptions
-#   TargetRequired
-#   not_enough_gold
-#   not_enough_hp
-#   BlockOnly
-#   DeadPlayer
-#   InvalidTarget
-#   ActionNotAllowed
-#   MajorError
 class TargetRequired(Exception):
     pass
 
@@ -16,11 +7,11 @@ class BlockOnly(Exception):
 class DeadPlayer(Exception):
     pass
 
-class not_enough_gold(Exception):
+class NotEnoughGold(Exception):
     def __init__(self, gold_required):
         self.gold_required = gold_required
 
-class not_enough_hp(Exception):
+class NotEnoughHP(Exception):
     def __init__(self, hp_required):
         self.hp_required = hp_required
         
@@ -36,7 +27,13 @@ class ActionNotAllowed(Exception):
     def __str__(self):
         return self.message
 
-class MajorError(Exception):
+class IndexError(Exception):
+    def __init__(self, message):
+        self.message = message
+    def __str__(self):
+        return self.message
+    
+class DontHaveCard(Exception):
     def __init__(self, message):
         self.message = message
     def __str__(self):

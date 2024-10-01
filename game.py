@@ -1,6 +1,6 @@
 import random
 
-from error import MajorError
+from error import IndexError
 
 class Game:
     def reset(self):
@@ -10,42 +10,36 @@ class Game:
         self.common_actions = [action.Dig, action.Attack]
         self.char_cards = [action.Miner, action.Thief, action.Swordman, action.Tanker]
         self.Deck = self.char_cards * 2
-        random.shuffle(self.Deck)
-        
-        self.dead_char_cards = []
-        
-        # separating these function allow outside modules (like the unit test) to change the behavior of
-        # shuffling and selecting a card
         self.randomShuffle = random.shuffle
         self.randomSelector = random.choice
+        self.randomShuffle(self.Deck)
+
+        self.dead_char_cards = []
 
 
     def request_block(self, current_player, action, target_player):
         """ 
-        Ask each player if they want to block current player's action.
-        Requests are performed in a clockwise rotation (http://boardgamegeek.com/article/18425206#18425206). However,
-        for the sake of game flow, the targetted player (if any) will be requested first.
+        Ask each player if they want to block current player's action, the targetted player will be requested first.
         If someone wants to block, return the tuple (player, action). Else, return (None, None).
         """
-        # xoay lượt, đến lượt ai xoay người đó lên đầu
+        # change turn and bring the current_player to top of the list
         current_index = self.player_list.index(current_player)
         player_list = self.player_list[current_index:] + self.player_list[0:current_index]
         
         if target_player != None:
-            # chuyển target_player lên đầu player_list
+            # bring target_player to top of the list
             target_index = self.player_list.index(target_player)
             player_list.remove(target_player)
             player_list = [self.player_list[target_index]] + player_list
         
         for player in player_list:
-            # bỏ qua người đang đến lượt và người chết
+            # other players (not current and dead player)
             if player == current_player or not player.alive: 
                 continue
             
-            blocking_action = player.confirmBlock(current_player, action)
-            
+            blocking_action = player.confirm_block(current_player, action)
             if blocking_action != None: 
-                # kiểm tra có block được không (nếu action có trong list block action)
+                # check if block is possible
                 if not action.name in blocking_action.blocks:
                     continue       
             
@@ -55,9 +49,7 @@ class Game:
 
     def request_lie_check(self, current_player, action, target_player):
         """ 
-        Ask each player if they want to call active player's (possible) bluff.
-        Requests are performed in a clockwise rotation (http://boardgamegeek.com/article/18425206#18425206). However,
-        for the sake of game flow, the targetted player (if any) will be requested first.
+        Ask each player if they want to check current's player action is truth, the targetted player (if any) will be requested first.
         If someone wants to call, return the player. Else, return None
         """
         current_index = self.player_list.index(current_player)
@@ -71,7 +63,7 @@ class Game:
         for player in player_list:
             if player == current_player or not player.alive: 
                 continue
-            if player.confirmCall(current_player, action): 
+            if player.confirm_check_lie(current_player, action): 
                 return player
         return None
 
@@ -81,7 +73,7 @@ class Game:
     
     def deal_card(self):
         if not len(self.Deck): 
-            raise MajorError("There is no card in the court deck!")
+            raise IndexError("There is no card in the character deck!")
         
         card = self.randomSelector(self.Deck)
         self.Deck.remove(card)
@@ -95,4 +87,4 @@ class Game:
                 
         return blockers
             
-Game = Game()     # global variable
+Game = Game()
