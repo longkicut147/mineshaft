@@ -42,8 +42,10 @@ class Player:
         return None
 
 
-    def change_card(self):
-        card = self.char_card[0]
+    def change_card(self, card):
+        if not card in self.char_card:
+            raise BaseException("%s is not found in player's char_card. Something went wrong" % card)
+
         self.char_card.remove(card)
         # give player a new card
         newcard = Game.deal_char_card()
@@ -92,11 +94,12 @@ class Player:
             
         if checking_player != None:
             # step 4.1
-            if action == self.char_card:
-                self.change_card()
+            if action in self.char_card:
+                self.change_card(self.char_card[0])
+                print("\n%s loses 5 hp" % (checking_player.name))
                 checking_player.take_damage(5)
             else:
-                self.change_card()
+                self.change_card(self.char_card[0])
                 self.take_damage(5)
 
                 message = "%s loses 5 hp for lying to use %s" % (self.name, action.name)
@@ -105,7 +108,6 @@ class Player:
 
         # Step 4
         blocking_player = None
-        
         
         if len(Game.get_blocking_actions(action)):
             blocking_player, blocking_action = Game.request_block(self, action, target)

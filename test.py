@@ -108,7 +108,7 @@ def clear_screen(headerMessage, headerSize = 10):
 
 def Print_Deck():
     print("There are %i cards in the character Deck" % (len(Game.char_Deck)))
-    print("\nThere are %i cards in the wildcard Deck"% (len(Game.wild_Deck)))
+    print("There are %i cards in the wildcard Deck"% (len(Game.wild_Deck)))
 
 
 def Print_revealed_cards():
@@ -116,7 +116,7 @@ def Print_revealed_cards():
     if size == 0:
         return
         
-    print("There are %i cards that has been revealed:" % (size))
+    print("\nThere are %i cards that has been revealed:" % (size))
 
     reveals = [card.name for card in Game.dead_char_cards]
     reveals.sort()
