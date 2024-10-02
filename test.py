@@ -23,12 +23,12 @@ class TERMINAL(Player):
         else:
             name = self.name + ","
         
-        choice = input ("%s check if %s is lying? (Y/N)? " % (name, active_player.name))
+        choice = input("%s check if %s is lying? (Y/N)? " % (name, active_player.name))
         choice = choice.upper()
         
         # if syntax is wrong, ask again
         if not choice.strip() in ('Y', 'N', ''):
-            print ("\n Type Y to check. \n Type N or enter to allow.\n")
+            print("\n Type Y to check. \n Type N or enter to allow.\n")
             return self.confirm_check_lie(active_player, action)
             
         if choice == 'Y':
@@ -50,7 +50,7 @@ class TERMINAL(Player):
         if TERMINAL.show_block_options:
             TERMINAL.show_block_options = False            
             
-            print ("\n%s can be blocked with:" % (opponent_action.name))
+            print("\n%s can be blocked with:" % (opponent_action.name))
             for i, card in enumerate(card_blockers):
                 print(" %i: %s" % (i + 1, card.name))
             print(" %i: Allow\n" % (blockers))            
@@ -70,7 +70,7 @@ class TERMINAL(Player):
             choice = str(blockers)      # do not block
         
         if not choice.isnumeric():
-            print (" Select a number between 1-%i. Or enter to allow" % blockers)
+            print(" Select a number between 1-%i. Or enter to allow" % blockers)
             return self.confirm_block(active_player, opponent_action)
         choice = int(choice) - 1
         
@@ -78,7 +78,7 @@ class TERMINAL(Player):
             return None         # player decides not to block
         
         if not (choice >= 0 and choice < len(card_blockers)):
-            print (" Select a number between 1-%i. Press enter to allow %s's %s." % (blockers, active_player.name, opponent_action.name))
+            print(" Select a number between 1-%i. Press enter to allow %s's %s." % (blockers, active_player.name, opponent_action.name))
             return self.confirm_block(active_player, opponent_action)
             
         block = card_blockers[choice - 1]
@@ -107,7 +107,8 @@ def clear_screen(headerMessage, headerSize = 10):
         
 
 def Print_Deck():
-    print ("There are %i cards in the character Deck" % (len(Game.Deck)))
+    print("There are %i cards in the character Deck" % (len(Game.char_Deck)))
+    print("\nThere are %i cards in the wildcard Deck"% (len(Game.wild_Deck)))
 
 
 def Print_revealed_cards():
@@ -115,9 +116,9 @@ def Print_revealed_cards():
     if size == 0:
         return
         
-    print ("There are %i cards that has been revealed:" % (size))
+    print("There are %i cards that has been revealed:" % (size))
 
-    reveals = [card.name for card in Game.char_cards]
+    reveals = [card.name for card in Game.dead_char_cards]
     reveals.sort()
     for card in reveals:
         print("   ", card)
@@ -126,8 +127,8 @@ def Print_revealed_cards():
 def Print_actions():
     for i, action in enumerate(available_action):
         if action.name != "Tanker":
-            print (" %i: %s" % (i + 1, action.name))
-    print (" X: Exit the game")
+            print(" %i: %s" % (i + 1, action.name))
+    print(" X: Exit the game")
 
         
 def setup_actions():
@@ -136,6 +137,8 @@ def setup_actions():
         available_action.append(action)
     for action in Game.char_cards:
         available_action.append(action)
+    for action in Game.wild_cards:
+        available_action.append(action)
     
 
 def setup_game():
@@ -143,25 +146,19 @@ def setup_game():
     # Shuffle the player list    
     Game.reset()
     setup_actions()
-    
         
     numberof_player = 4
     
     def create_player(number):
         player = TERMINAL()
-        
         player.name = input("Player #%i: What is your name? " % (number + 1))
-                
         if player.name.strip() == "":
             return create_player(number)
-
         return player
 
     print("\n")
     for i in range(numberof_player):
         Players.append(create_player(i))
-
-    random.shuffle(Players)
 
     global player_alive
     player_alive = [player for player in Players if player.alive]
@@ -234,7 +231,7 @@ def game():
             Print_Deck()
             Print_revealed_cards()
             print("\n%s's cards are: " % (player.name))
-            player_cards = " and ".join([card.name for card in player.char_card])
+            player_cards = " and ".join([card.name for card in player.cards])
             print("    " + player_cards)
 
         

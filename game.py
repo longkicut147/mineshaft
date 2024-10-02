@@ -7,12 +7,17 @@ class Game:
         self.player_list = []
         
         import action
-        self.common_actions = [action.Dig, action.Attack]
+        self.common_actions = [action.Dig, action.Attack, action.Buy]
         self.char_cards = [action.Miner, action.Thief, action.Swordman, action.Tanker]
-        self.Deck = self.char_cards * 2
+        self.wild_cards = [action.Disguise, action.Discard, action.Swap, action.Gun, action.Heal]
+        self.char_Deck = self.char_cards * 2
+        self.wild_Deck = self.wild_cards
+        
+
         self.randomShuffle = random.shuffle
         self.randomSelector = random.choice
-        self.randomShuffle(self.Deck)
+        self.randomShuffle(self.char_Deck)
+        self.randomShuffle(self.wild_Deck)
 
         self.dead_char_cards = []
 
@@ -68,15 +73,23 @@ class Game:
         return None
 
     def add_card_to_deck(self, card):
-        self.Deck.append(card)
-        self.randomShuffle(self.Deck)
+        self.char_Deck.append(card)
+        self.randomShuffle(self.char_Deck)
     
-    def deal_card(self):
-        if not len(self.Deck): 
+    def deal_char_card(self):
+        if not len(self.char_Deck): 
             raise IndexError("There is no card in the character deck!")
         
-        card = self.randomSelector(self.Deck)
-        self.Deck.remove(card)
+        card = self.randomSelector(self.char_Deck)
+        self.char_Deck.remove(card)
+        return card
+    
+    def deal_wild_card(self):
+        if not len(self.wild_Deck): 
+            raise IndexError("There is no card in the wildcard deck!")
+        
+        card = self.randomSelector(self.wild_Deck)
+        self.wild_Deck.remove(card)
         return card
 
     def get_blocking_actions(self, action):

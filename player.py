@@ -1,4 +1,3 @@
-from deck import*
 from game import Game
 from error import *
 from action import *
@@ -10,12 +9,15 @@ class Player:
 
     def reset(self):
         self.name = "name"
-        self.char_card = []
-        self.char_card.append(Game.deal_card())
-        self.wild_cards = []
-        self.wild_cards.append(Game.deal_card())
         self.gold = 1
         self.hp = 10
+
+        self.char_card = []
+        self.char_card.append(Game.deal_char_card())
+        self.wild_cards = []
+        self.wild_cards.append(Game.deal_wild_card())
+        self.cards = self.char_card + self.wild_cards
+
         self.alive = True
         Game.player_list.append(self)
 
@@ -43,10 +45,11 @@ class Player:
     def change_card(self):
         card = self.char_card[0]
         self.char_card.remove(card)
-        Game.add_card_to_deck(card)
         # give player a new card
-        newcard = Game.deal_card()
+        newcard = Game.deal_char_card()
         self.char_card.append(newcard)
+        # add the old card to decks
+        Game.add_card_to_deck(card)
 
 
     def play(self, action, target = None):
@@ -82,7 +85,8 @@ class Player:
 
         # Step 3
         checking_player:Player = None
-        # request player to check for lie if action is character actions
+        
+        # request player to check for lie only if action is character actions
         if action in Game.char_cards:
             checking_player = Game.request_lie_check(self, action, target)
             
@@ -102,7 +106,7 @@ class Player:
         # Step 4
         blocking_player = None
         
-        # only check lie for character actions, not common actions or wildcard actions
+        
         if len(Game.get_blocking_actions(action)):
             blocking_player, blocking_action = Game.request_block(self, action, target)
         
