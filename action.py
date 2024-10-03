@@ -8,10 +8,11 @@ class Action:
     description = ""
     blocks = []
     hasTarget = False
+    chooseCard = False
     gold_required = 0
     hp_required = 0
             
-    def play(self, player:Player, target:Player = None):
+    def play(self, player:Player, target:Player = None, card = None):
         """
         should be overrriden by child classes
         returns (status, response): 
@@ -30,7 +31,7 @@ class Dig(Action):
     name = "Dig"
     description = "Get 1 gold."
     
-    def play(self, player:Player, target:Player = None):
+    def play(self, player:Player, target:Player = None, card = None):
         player.gold += 1
 
         return True, "Success"
@@ -42,7 +43,7 @@ class Attack(Action):
     hasTarget = True
     gold_required = 7
     
-    def play(self, player:Player, target:Player = None):
+    def play(self, player:Player, target:Player = None, card = None):
         if player.gold < self.gold_required:
             raise NotEnoughGold(self.gold_required)  
         if target == None:
@@ -61,7 +62,7 @@ class Buy(Action):
     description = "Pay 3 gold to buy a wild card."
     gold_required = 3
 
-    def play(self, player:Player, target:Player = None):
+    def play(self, player:Player, target:Player = None, card = None):
         if player.gold < self.gold_required:
             raise NotEnoughGold(self.gold_required)
         if len(Game.wild_Deck) == 0:
@@ -82,7 +83,7 @@ class Miner(Action):
     name = "Miner"
     description = "Get 2 gold."
             
-    def play(self, player:Player, target:Player = None):
+    def play(self, player:Player, target:Player = None, card = None):
         player.gold += 2
 
         return True, "Success"
@@ -94,7 +95,7 @@ class Thief(Action):
     blocks = ["Thief"]
     hasTarget = True
             
-    def play(self, player:Player, target:Player = None):
+    def play(self, player:Player, target:Player = None, card = None):
         if target == None:
             raise TargetRequired
 
@@ -115,7 +116,7 @@ class Tanker(Action):
     description = "Blocks Swordman and Thief."
     blocks = ["Swordman", "Thief"]
             
-    def play(self, player:Player, target:Player = None):
+    def play(self, player:Player, target:Player = None, card = None):
         raise BlockOnly
         
 
@@ -125,7 +126,7 @@ class Swordman(Action):
     hasTarget = True
     hp_required = 3
     
-    def play(self, player:Player, target:Player = None):
+    def play(self, player:Player, target:Player = None, card = None):
         if player.hp < self.hp_required:
             raise NotEnoughHP(self.hp_required)
         if target == None:
@@ -145,14 +146,14 @@ class Disguise(Action):
     name = "Disguise"
     description = "Change your character card."
 
-    def play(self, player:Player, target:Player=None):
+    def play(self, player:Player, target:Player=None, card = None):
         if Disguise not in player.wild_cards:
             raise DontHaveCard
         if len(Game.char_Deck) == 0:
             raise IndexError
         player.wild_cards.remove(Disguise)
         
-        Player.change_card(player)
+        Player.change_card(player, player.char_card[0])
 
         return True, "Success"
     
@@ -162,7 +163,7 @@ class Swap(Action):
     description = "Change your character card with a player."
     hasTarget = True
 
-    def play(self, player:Player, target:Player = None):
+    def play(self, player:Player, target:Player = None, card = None):
         if Swap not in player.wild_cards:
             raise DontHaveCard
         if target == None:
@@ -179,14 +180,14 @@ class Discard(Action):
     description = "Force a player to change their character card."
     hasTarget = True    
 
-    def play(self, player:Player, target:Player = None):
+    def play(self, player:Player, target:Player = None, card = None):
         if Discard not in player.wild_cards:
             raise DontHaveCard
         if target == None:
             raise TargetRequired  
         player.wild_cards.remove(Discard)
 
-        Player.change_card(target)
+        Player.change_card(target, target.char_card[0])
 
         return True, "Success"      
 
@@ -194,9 +195,10 @@ class Discard(Action):
 class Gun(Action):
     name = "Gun"
     description = "Guess target's character card. If they have it, attack 5 hp on them."
-    hasTarget = True   
+    hasTarget = True
+    chooseCard = True   
 
-    def play(self, player:Player, target:Player = None):
+    def play(self, player:Player, target:Player = None, card = None):
         if Gun not in player.wild_cards:
             raise DontHaveCard
         if target == None:
@@ -205,7 +207,11 @@ class Gun(Action):
             raise InvalidTarget("Can not attack because target is dead")
         player.wild_cards.remove(Gun)
             
-        target.take_damage(5)
+        if card == target.char_card[0]:
+            print("%s's gun hit %s's character" % (player.name, target.name))
+            target.take_damage(5)
+        else:
+            print("%s's gun miss %s's character" % (player.name, target.name))
 
         return True, "Success"
 
@@ -214,7 +220,7 @@ class Heal(Action):
     name = "Heal"
     description = "Set your hp to 8."
 
-    def play(self, player:Player, target:Player=None):
+    def play(self, player:Player, target:Player=None, card = None):
         if Heal not in player.wild_cards:
             raise DontHaveCard
         player.wild_cards.remove(Heal)

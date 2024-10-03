@@ -133,12 +133,9 @@ def Print_actions():
         
 def setup_actions():
     global available_action
-    for action in Game.common_actions:
-        available_action.append(action)
-    for action in Game.char_cards:
-        available_action.append(action)
-    for action in Game.wild_cards:
-        available_action.append(action)
+    available_action = [action.Dig, action.Attack, action.Buy,
+                        action.Miner, action.Thief, action.Swordman, action.Tanker,
+                        action.Disguise, action.Discard, action.Swap, action.Gun, action.Heal]
     
 
 def setup_game():
@@ -198,7 +195,7 @@ def game():
 
             goldStr = ""
             for player_info in Player_list:            
-                gold = "gold: %2i" % (player_info.gold)  # Đảm bảo gold có định dạng số với ít nhất 2 ký tự
+                gold = "gold: %2i" % (player_info.gold)
                 padding = " " * (paddingWidth - len(gold))
                 goldStr += gold + padding
             
@@ -209,7 +206,7 @@ def game():
 
             hpStr = ""
             for player_info in Player_list:            
-                hp = "hp:   %2i" % (player_info.hp)  # Đảm bảo hp có định dạng số với ít nhất 2 ký tự
+                hp = "hp:   %2i" % (player_info.hp)
                 padding = " " * (paddingWidth - len(hp))
                 hpStr += hp + padding
             
@@ -231,8 +228,10 @@ def game():
             Print_Deck()
             Print_revealed_cards()
             print("\n%s's cards are: " % (player.name))
-            player_cards = " and ".join([card.name for card in player.cards])
-            print("    " + player_cards)
+            player_char_card = " and ".join([card.name for card in player.char_card])
+            print("    " + player_char_card)
+            player_wild_cards = " and ".join([card.name for card in player.wild_cards])
+            print("    " + player_wild_cards)
 
         
         def change_turn():
@@ -275,13 +274,11 @@ def game():
                 if len(targets) == 1:
                     return targets[0]
                 
-
                 print("")
                 for i, iter_player in enumerate(targets):
                     print(" %i: %s" % (i + 1, iter_player.name))
                 target = input ("Choose a target: ")
                 
-
                 if not target.isnumeric():
                     return choose_target()
                 target = int(target) - 1
@@ -289,6 +286,23 @@ def game():
                     return choose_target()
                 
                 return targets[target]
+
+
+            def choose_card():
+                cards = Game.char_cards
+
+                print("")
+                for i, iter_card in enumerate(cards):
+                    print(" %i: %s" % (i + 1, iter_card.name))
+                card = input ("Guess player's character card: ")
+
+                if not card.isnumeric():
+                    return choose_card()
+                card = int(card) - 1
+                if card < 0 or card >= len(cards):
+                    return choose_card()
+                
+                return cards[card]
 
 
             if player.gold < available_action[choice].gold_required:
@@ -310,11 +324,14 @@ def game():
             target = None
             if available_action[choice].hasTarget:
                 target = choose_target()
-
+            
+            card = None
+            if available_action[choice].chooseCard:
+                card = choose_card()
 
             try:
                 header = []
-                headerStr = "%s is playing %s" % (player.name, available_action[choice].name)
+                headerStr = "%s's action is %s" % (player.name, available_action[choice].name)
                 headerLen = len(headerStr) + 4
                 headerStr = headerStr.center(headerLen)
                 header.append(headerStr)
@@ -327,7 +344,7 @@ def game():
                 clear_screen("|\n|".join(header), headerLen)
                 
                 print("")
-                status, response = player.play(available_action[choice], target)
+                status, response = player.play(available_action[choice], target, card)
 
             except action.ActionNotAllowed as e:
                 print(e.message)

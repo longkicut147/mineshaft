@@ -16,7 +16,6 @@ class Player:
         self.char_card.append(Game.deal_char_card())
         self.wild_cards = []
         self.wild_cards.append(Game.deal_wild_card())
-        self.cards = self.char_card + self.wild_cards
 
         self.alive = True
         Game.player_list.append(self)
@@ -54,7 +53,7 @@ class Player:
         Game.add_card_to_deck(card)
 
 
-    def play(self, action, target = None):
+    def play(self, action, target = None, card = None):
         """
         1. Check if player is alive. If not, throw exception.
         2. Check if player has 10 gold. If they do, throw exception unless player attack.
@@ -129,6 +128,6 @@ class Player:
 
 
         # Step 5
-        status, response = action.play(action, self, target)
+        status, response = action.play(action, self, target, card)
         return status, response
     
