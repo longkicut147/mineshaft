@@ -94,14 +94,13 @@ class Player:
         if checking_player != None:
             # step 4.1
             if action in self.char_card:
-                self.change_card(self.char_card[0])
                 print("\n%s loses 5 hp" % (checking_player.name))
                 checking_player.take_damage(5)
-            else:
                 self.change_card(self.char_card[0])
-                self.take_damage(5)
-
+            else:
                 message = "%s loses 5 hp for lying to use %s" % (self.name, action.name)
+                self.take_damage(5)
+                self.change_card(self.char_card[0])
                 return False, message             
         
 
@@ -115,13 +114,14 @@ class Player:
             # Step 3.1
             if self.confirm_check_lie(blocking_player, blocking_action):
                 if blocking_action in blocking_player.char_card:
-                    self.take_damage(5)
-                    blocking_player.change_card(blocking_action)
                     message = "%s has %s. %s loses 5 hp." % (blocking_player.name, blocking_action.name, self.name)
+                    self.take_damage(5)
+                    blocking_player.change_card(blocking_player.char_card[0])
                     return False, message
                 else:
+                    print("%s loses 5 hp for lying to use %s" % (blocking_player.name, action.name))
                     blocking_player.take_damage(5)
-                    blocking_player.change_card(blocking_action)
+                    blocking_player.change_card(blocking_player.char_card[0])
             else:
                 message = "Blocked by %s" % blocking_player.name
                 return False, message

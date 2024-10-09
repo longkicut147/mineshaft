@@ -4,10 +4,17 @@ from game import Game
 
 import random
 import os
+import pandas as pd
 
 Players = []
 player_alive = []
 current_player = 0
+
+# database
+round_num = 0
+player_name = []
+player_hp = []
+player_gold = []
 
 available_action = []
 
@@ -23,7 +30,7 @@ class TERMINAL(Player):
         else:
             name = self.name + ","
         
-        choice = input("%s check if %s is lying? (Y/N)? " % (name, active_player.name))
+        choice = input("\n%s check if %s is lying? (Y/N)? " % (name, active_player.name))
         choice = choice.upper()
         
         # if syntax is wrong, ask again
@@ -81,9 +88,9 @@ class TERMINAL(Player):
             print(" Select a number between 1-%i. Press enter to allow %s's %s." % (blockers, active_player.name, opponent_action.name))
             return self.confirm_block(active_player, opponent_action)
             
-        block = card_blockers[choice - 1]
+        block = card_blockers[choice]
         
-        print("\n\n%s is blocking with %s" % (self.name, block.name))
+        print("\n%s is blocking with %s" % (self.name, block.name))
         return block
 
 
@@ -161,10 +168,27 @@ def setup_game():
     player_alive = [player for player in Players if player.alive]
     
 
+def store_data(player, round_number):
+    file = 'round_data.csv'
+    df = pd.read_csv(file)
+
+    new_row = {
+        'Round': round_number,
+        'Player': player.name,
+        'Health': player.hp,
+        'Gold': player.gold
+    }
+
+    df = df._append(new_row, ignore_index=True)
+    df.to_csv(file, index=False)
+
+
+
 # main loop
 def game():
 
     global player_alive, current_player, Running
+    global round_num, player_name, player_hp, player_gold
     
     Running = True
     while Running and len(player_alive) > 1:
@@ -235,14 +259,18 @@ def game():
 
         
         def change_turn():
-            global current_player
+            global current_player, round_num
+
             current_player += 1
             # reset to first player if loop out of 4
             if current_player >= len(Players): 
-                current_player = 0
-            
+                current_player = 0 
+                round_num += 1
+
             global player_alive 
             player_alive = [player for player in Players if player.alive]
+
+            return round_num
         
 
         def choose_action():    
@@ -250,7 +278,7 @@ def game():
             if not choice.isnumeric():
                 if choice.upper() == "X":
                     confirm = input ("\nAre you sure you want to exit (Y/N)? ")
-                    if confirm.upper() != "Y":                      
+                    if confirm.upper() != "Y":  
                         choose_action()
                         return  
                     global Running    
@@ -382,7 +410,8 @@ def game():
             print("\nAvailable actions:")
             Print_actions()
             choose_action()
-            
+        
+            store_data(player, round_num)    
         change_turn()
 
         if Running: 
